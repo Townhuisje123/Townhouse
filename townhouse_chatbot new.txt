@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Townhouse Brand Ambassador</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brown: #6B3F18;
+    --brown-mid: #A0632A;
+    --brown-light: #C4882A;
+    --beige: #F5F0E8;
+    --beige-dark: #EDE5D8;
+    --beige-border: #DDD5C4;
+    --white: #FFFFFF;
+    --dark: #2A1A0A;
+    --gray: #7A7068;
+    --green: #3A7A4A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--beige);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--brown);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+
+  .logo {
+    width: 42px; height: 42px;
+    background: var(--brown-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 10px; color: white; font-weight: 700;
+    text-align: center; line-height: 1.2; flex-shrink: 0;
+  }
+
+  .header-info h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; color: white;
+  }
+
+  .header-info p { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+
+  .header-right {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .online-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: rgba(255,255,255,0.7);
+  }
+
+  .online-dot {
+    width: 7px; height: 7px;
+    background: #4CAF50; border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  .reset-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* ── ONBOARDING ── */
+  #onboarding {
+    flex: 1; display: flex;
+    align-items: center; justify-content: center;
+    padding: 32px 20px;
+  }
+
+  .onboarding-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 36px 28px;
+    max-width: 480px; width: 100%;
+    border: 1px solid var(--beige-border);
+  }
+
+  .welcome-icon {
+    width: 64px; height: 64px;
+    background: var(--beige-dark); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; margin-bottom: 20px;
+  }
+
+  .onboarding-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px; color: var(--brown); margin-bottom: 10px;
+  }
+
+  .onboarding-card .subtitle {
+    font-size: 15px; color: var(--gray);
+    line-height: 1.6; margin-bottom: 10px;
+  }
+
+  .capability-list {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .capability-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--dark);
+    background: var(--beige);
+    border-radius: 8px; padding: 9px 12px;
+  }
+
+  .cap-icon {
+    width: 24px; height: 24px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+
+  .cap-icon.brown { background: var(--brown); }
+  .cap-icon.mid { background: var(--brown-mid); }
+  .cap-icon.light { background: var(--brown-light); }
+
+  .field-label {
+    display: block; font-size: 11px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--brown-mid); margin-bottom: 8px;
+  }
+
+  select {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid var(--beige-border);
+    border-radius: 10px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 15px; color: var(--dark);
+    background: var(--beige); appearance: none;
+    cursor: pointer; outline: none;
+    margin-bottom: 16px; transition: border-color 0.2s;
+  }
+
+  select:focus { border-color: var(--brown-mid); }
+
+  .btn-start {
+    width: 100%; padding: 14px;
+    background: var(--brown); color: white;
+    border: none; border-radius: 10px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+
+  .btn-start:hover { background: #4A2910; transform: translateY(-1px); }
+  .btn-start:active { transform: scale(0.98); }
+
+  /* ── CHAT ── */
+  #chat {
+    display: none; flex-direction: column; flex: 1;
+    max-width: 700px; width: 100%;
+    margin: 0 auto; padding: 0 16px;
+  }
+
+  .context-bar {
+    padding: 10px 0 4px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+
+  .context-pill {
+    background: var(--beige-dark);
+    border: 1px solid var(--beige-border);
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 12px; color: var(--brown-mid); font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .context-dot { width: 5px; height: 5px; background: var(--brown-mid); border-radius: 50%; }
+
+  /* Categories */
+  .category-tabs {
+    display: flex; gap: 6px; padding: 8px 0 4px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+
+  .category-tabs::-webkit-scrollbar { display: none; }
+
+  .cat-tab {
+    padding: 6px 14px;
+    background: var(--white);
+    border: 1.5px solid var(--beige-border);
+    border-radius: 20px; font-size: 12px; font-weight: 600;
+    color: var(--gray); cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+
+  .cat-tab:hover, .cat-tab.active {
+    background: var(--brown); color: white; border-color: var(--brown);
+  }
+
+  .quick-wrap {
+    display: flex; gap: 7px; padding: 6px 0 4px;
+    flex-wrap: wrap; min-height: 36px;
+  }
+
+  .quick-btn {
+    padding: 7px 13px;
+    background: var(--white);
+    border: 1.5px solid var(--beige-border);
+    border-radius: 20px; font-size: 13px; color: var(--brown);
+    cursor: pointer; transition: all 0.2s;
+    font-family: 'Source Sans 3', sans-serif;
+    white-space: nowrap; animation: fadeUp 0.2s ease;
+  }
+
+  .quick-btn:hover { background: var(--brown); color: white; border-color: var(--brown); }
+
+  /* Messages */
+  .messages {
+    flex: 1; overflow-y: auto;
+    padding: 12px 0; display: flex;
+    flex-direction: column; gap: 14px;
+    max-height: calc(100vh - 320px);
+    min-height: 180px;
+  }
+
+  .messages::-webkit-scrollbar { width: 3px; }
+  .messages::-webkit-scrollbar-thumb { background: var(--beige-border); border-radius: 2px; }
+
+  .msg { display: flex; gap: 10px; animation: fadeUp 0.25s ease; }
+  .msg.user { flex-direction: row-reverse; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    flex-shrink: 0; display: flex;
+    align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .avatar.bot { background: var(--brown); color: white; }
+  .avatar.user-av { background: var(--brown-light); color: white; font-family: 'Source Sans 3', sans-serif; font-size: 14px; }
+
+  .bubble {
+    max-width: 78%; padding: 12px 16px;
+    border-radius: 16px; font-size: 14px;
+    line-height: 1.7; color: var(--dark);
+  }
+
+  .bubble.bot {
+    background: var(--white);
+    border-radius: 4px 16px 16px 16px;
+    border: 1px solid var(--beige-border);
+  }
+
+  .bubble.user {
+    background: var(--brown); color: white;
+    border-radius: 16px 4px 16px 16px;
+  }
+
+  .bubble strong { font-weight: 600; }
+  .bubble em { font-style: italic; color: var(--brown-mid); }
+
+  .bubble ul { margin: 8px 0 0 16px; }
+  .bubble ul li { margin-bottom: 4px; }
+
+  .msg-tag {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--brown-light);
+    margin-bottom: 6px; display: block;
+  }
+
+  /* Suggestion cards */
+  .suggestion-cards {
+    display: flex; flex-direction: column;
+    gap: 7px; margin-top: 10px;
+  }
+
+  .suggestion-btn {
+    padding: 9px 13px;
+    background: var(--beige);
+    border: 1.5px solid var(--beige-border);
+    border-radius: 9px; font-size: 13px; color: var(--brown);
+    cursor: pointer; text-align: left;
+    font-family: 'Source Sans 3', sans-serif;
+    transition: all 0.2s; line-height: 1.4;
+  }
+
+  .suggestion-btn:hover { background: var(--brown); color: white; border-color: var(--brown); }
+
+  /* Typing */
+  .typing-wrap { display: flex; gap: 10px; align-items: flex-start; }
+
+  .typing-dots {
+    background: var(--white);
+    border: 1px solid var(--beige-border);
+    border-radius: 4px 16px 16px 16px;
+    padding: 14px 18px; display: flex;
+    gap: 5px; align-items: center;
+  }
+
+  .typing-dots span {
+    width: 7px; height: 7px;
+    background: var(--brown-light); border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%,60%,100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+  }
+
+  /* Input */
+  .input-wrap {
+    padding: 12px 0 24px;
+    display: flex; gap: 9px; align-items: flex-end;
+  }
+
+  .input-box {
+    flex: 1; background: var(--white);
+    border: 1.5px solid var(--beige-border);
+    border-radius: 14px; padding: 11px 15px;
+    transition: border-color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .input-box:focus-within { border-color: var(--brown-mid); }
+
+  textarea {
+    width: 100%; border: none; outline: none;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 15px; color: var(--dark);
+    background: transparent; resize: none;
+    max-height: 100px; min-height: 22px; line-height: 1.5;
+  }
+
+  textarea::placeholder { color: #BBBBBB; }
+
+  .send-btn {
+    width: 44px; height: 44px;
+    background: var(--brown); border: none;
+    border-radius: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+
+  .send-btn:hover { background: #4A2910; }
+  .send-btn:active { transform: scale(0.95); }
+  .send-btn svg { width: 19px; height: 19px; fill: white; }
+
+  .error-msg {
+    background: #FDECEA; border: 1px solid #F5B5B5;
+    border-radius: 10px; padding: 12px 14px;
+    font-size: 13px; color: #8B2020; margin: 8px 0;
+  }
+
+  .divider {
+    text-align: center; font-size: 11px;
+    color: var(--beige-border); letter-spacing: 1px;
+    padding: 4px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">TH</div>
+  <div class="header-info">
+    <h1>Townhouse Brand Ambassador</h1>
+    <p>Jouw slimme merkassistent — powered by Claude AI</p>
+  </div>
+  <div class="header-right">
+    <div class="online-badge"><div class="online-dot"></div>Online</div>
+    <button class="reset-btn" onclick="resetChat()">↺ Nieuw gesprek</button>
+  </div>
+</header>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="onboarding-card">
+    <div class="welcome-icon">🏠</div>
+    <h2>Welkom bij Townhouse</h2>
+    <p class="subtitle">Ik ben jouw persoonlijke assistent. Ik ken de Townhouse-merkidentiteit van binnen en buiten én kan je helpen met algemene vragen.</p>
+
+    <div class="capability-list">
+      <div class="capability-item">
+        <div class="cap-icon brown">🏨</div>
+        <span>Alles over de Townhouse-merkidentiteit uitleggen</span>
+      </div>
+      <div class="capability-item">
+        <div class="cap-icon mid">🎭</div>
+        <span>Situaties en scenario's doorspelen voor jouw functie</span>
+      </div>
+      <div class="capability-item">
+        <div class="cap-icon light">💡</div>
+        <span>Algemene vragen beantwoorden over van alles</span>
+      </div>
+    </div>
+
+    <label class="field-label">Jouw functie</label>
+    <select id="roleSelect">
+      <option value="">Kies jouw functie...</option>
+      <option value="frontoffice">Front Office / Receptie</option>
+      <option value="housekeeping">Housekeeping</option>
+      <option value="fb">Food & Beverage</option>
+      <option value="gm">General Manager</option>
+      <option value="sales">Sales / Marketing</option>
+      <option value="other">Overige functie</option>
+    </select>
+
+    <label class="field-label">Jouw hotel</label>
+    <select id="hotelSelect">
+      <option value="">Kies jouw hotel...</option>
+      <option value="townhouse_mst">Townhouse Maastricht</option>
+      <option value="townhouse_dh">Townhouse Den Haag</option>
+      <option value="kaboom">Kaboom Hotel</option>
+      <option value="mabi">Mabi City Centre</option>
+      <option value="tge">The Green Elephant</option>
+      <option value="qbic">Qbic Hotel Amsterdam</option>
+      <option value="marienhage">Hotel Mariënhage</option>
+      <option value="ald">The Ald Hotel</option>
+    </select>
+
+    <button class="btn-start" onclick="startChat()">Start gesprek →</button>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div id="chat">
+  <div class="context-bar" id="contextBar"></div>
+  <div class="category-tabs" id="categoryTabs"></div>
+  <div class="quick-wrap" id="quickWrap"></div>
+  <div class="messages" id="messages"></div>
+  <div class="input-wrap">
+    <div class="input-box">
+      <textarea id="userInput"
+        placeholder="Vraag me iets over Townhouse, jouw werk of wat dan ook..."
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"></textarea>
+    </div>
+    <button class="send-btn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `Je bent de Townhouse Brand Ambassador — een slimme, warme en veelzijdige AI-assistent voor medewerkers van LBG Hotels. Je hebt twee rollen:
+
+ROL 1 — TOWNHOUSE MERKEXPERT:
+Je kent de Townhouse-merkidentiteit van binnen en buiten. Je helpt medewerkers begrijpen wat Townhouse is, waarom de transitie plaatsvindt en hoe zij de merkidentiteit uitdragen in hun dagelijkse werk.
+
+TOWNHOUSE MERKIDENTITEIT:
+- Filosofie: "Come in as a guest, leave as a local"
+- Kernwaarden: huiselijk, persoonlijk, verrassend, lokaal verankerd, warm en naturel, design en kunst
+- De medewerker is gastheer, niet receptionist. De lounge is een woonkamer, niet een lobby
+- Vaste gasten bij naam kennen, kleine extra's bij loyale gasten
+- Tone of voice: informeel, warm, ongedwongen — als vrienden die komen logeren
+- Lokaal dialect als uitingsvorm
+
+WAAROM DE TRANSITIE:
+- LBG Hotels had 8 concepten met elk eigen naam en stijl
+- Townhouse is het sterkste en meest tijdloze concept — gaat door alle trends heen
+- Doel: 15 Townhouse hotels in 5 jaar in Nederland en Duitsland
+- Aantrekkelijk voor gemeentes, investeerders en gasten
+- "Je kunt er slapen als je 18 bent of als je directeur bent"
+
+GEDRAG PER FUNCTIE:
+Front Office/Receptie: begroet bij naam, check-in als thuiskomst, lokale expert zijn, attenties bij vaste gasten, gastgericht in elke interactie.
+Housekeeping: oog voor detail, kamer als thuis laten voelen, kleine verrassingen, bijzonderheden doorgeven aan receptie.
+Food & Beverage: lokale producten en verhalen, persoonlijk advies, de eethoek als verlengde van de woonkamer.
+General Manager: gezicht van het merk, vertel het transitieverhaal actief, leef de waarden voor, team meenemen.
+Sales/Marketing: merkidentiteit consistent uitdragen in alle communicatie, lokale verbinding benadrukken.
+
+ROL 2 — ALGEMENE SLIMME ASSISTENT:
+Je hebt de intelligentie en kennis van Claude AI — je kunt vragen beantwoorden over van alles: praktische werkvragen, taalvragen, rekenwerk, tips, advies, informatie opzoeken in je kennis, creatieve hulp, enzovoort. Je bent niet beperkt tot alleen Townhouse-onderwerpen.
+
+WANNEER WELKE ROL:
+- Vraag gaat over Townhouse, het merk, de transitie, merkgedrag → Rol 1: geef Townhouse-expertise
+- Vraag gaat over iets anders → Rol 2: beantwoord gewoon als slimme assistent
+- Combinatie mogelijk → combineer beide rollen
+
+ALTIJD:
+- Spreek in de taal van de medewerker (Nederlands of Engels)
+- Communiceer warm, persoonlijk en concreet
+- Houd antwoorden helder en niet te lang
+- Als iemand om een scenario vraagt, speel het realistisch door
+- Personaliseer op basis van de functie en het hotel van de medewerker`;
+
+const roleLabels = {
+  frontoffice: 'Front Office / Receptie',
+  housekeeping: 'Housekeeping',
+  fb: 'Food & Beverage',
+  gm: 'General Manager',
+  sales: 'Sales / Marketing',
+  other: 'Medewerker'
+};
+
+const hotelLabels = {
+  townhouse_mst: 'Townhouse Maastricht',
+  townhouse_dh: 'Townhouse Den Haag',
+  kaboom: 'Kaboom Hotel',
+  mabi: 'Mabi City Centre',
+  tge: 'The Green Elephant',
+  qbic: 'Qbic Hotel Amsterdam',
+  marienhage: 'Hotel Mariënhage',
+  ald: 'The Ald Hotel'
+};
+
+const categories = {
+  'Townhouse merk': [
+    'Wat is Townhouse?',
+    'Waarom de transitie naar Townhouse?',
+    'Wat zijn de kernwaarden van Townhouse?',
+    'Wat betekent "come in as a guest, leave as a local"?',
+    'Hoe verschilt Townhouse van andere hotels?'
+  ],
+  'Mijn werk': [
+    'Hoe begroet ik een gast op de Townhouse-manier?',
+    'Wat doe ik als een gast klaagt?',
+    'Hoe vertel ik gasten over de stad?',
+    'Wat zijn kleine extra\'s die ik kan doen voor vaste gasten?',
+    'Hoe leg ik Townhouse uit aan een gast die ernaar vraagt?'
+  ],
+  'Scenario\'s': [
+    'Speel: een vaste gast komt inchecken',
+    'Speel: een gast is ontevreden over zijn kamer',
+    'Speel: een gast vraagt wat Townhouse is',
+    'Speel: een nieuwe collega vraagt wat er verandert',
+    'Speel: een gast vraagt om een tip in de stad'
+  ],
+  'Algemeen': [
+    'Wat kan jij allemaal voor mij doen?',
+    'Help me een e-mail schrijven',
+    'Geef me een tip voor vandaag',
+    'Vertel me iets interessants over Maastricht',
+    'Hoe ga ik goed om met werkstress?'
+  ]
+};
+
+let userRole = '', userHotel = '', history = [], activeCategory = 'Townhouse merk';
+
+function startChat() {
+  const role = document.getElementById('roleSelect').value;
+  const hotel = document.getElementById('hotelSelect').value;
+  if (!role || !hotel) { alert('Selecteer eerst jouw functie en hotel.'); return; }
+
+  userRole = role;
+  userHotel = hotel;
+
+  document.getElementById('onboarding').style.display = 'none';
+  const chat = document.getElementById('chat');
+  chat.style.display = 'flex';
+
+  // Context pills
+  const bar = document.getElementById('contextBar');
+  bar.innerHTML = `
+    <div class="context-pill"><div class="context-dot"></div>${hotelLabels[hotel]}</div>
+    <div class="context-pill"><div class="context-dot"></div>${roleLabels[role]}</div>
+  `;
+
+  // Category tabs
+  buildCategoryTabs();
+
+  // Opening message
+  const opening = `Hoi! Ik ben jouw Townhouse Brand Ambassador — én je slimme assistent voor van alles. 🏠\n\nIk zie dat je werkt als **${roleLabels[role]}** bij **${hotelLabels[hotel]}**. Ik kan je helpen met:\n\n• Alles over de **Townhouse-merkidentiteit** uitleggen\n• **Scenario's doorspelen** die passen bij jouw functie\n• **Algemene vragen** beantwoorden — over je werk, de stad, of wat dan ook\n\nKies een categorie hierboven of stel direct een vraag!`;
+
+  addMessage('bot', opening);
+}
+
+function buildCategoryTabs() {
+  const tabs = document.getElementById('categoryTabs');
+  tabs.innerHTML = '';
+
+  Object.keys(categories).forEach(cat => {
+    const tab = document.createElement('button');
+    tab.className = `cat-tab${cat === activeCategory ? ' active' : ''}`;
+    tab.textContent = cat;
+    tab.onclick = () => selectCategory(cat, tab);
+    tabs.appendChild(tab);
+  });
+
+  buildQuickButtons(activeCategory);
+}
+
+function selectCategory(cat, tabEl) {
+  activeCategory = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  buildQuickButtons(cat);
+}
+
+function buildQuickButtons(cat) {
+  const wrap = document.getElementById('quickWrap');
+  wrap.innerHTML = '';
+  categories[cat].forEach(q => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-btn';
+    btn.textContent = q;
+    btn.onclick = () => sendText(q);
+    wrap.appendChild(btn);
+  });
+}
+
+function addMessage(type, text, suggestions = null) {
+  const messages = document.getElementById('messages');
+
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${type === 'user' ? 'user' : ''}`;
+
+  const av = document.createElement('div');
+  av.className = `avatar ${type === 'bot' ? 'bot' : 'user-av'}`;
+  av.textContent = type === 'bot' ? 'TH' : '👤';
+
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${type === 'bot' ? 'bot' : 'user'}`;
+  bubble.innerHTML = formatText(text);
+
+  if (suggestions && suggestions.length > 0) {
+    const cards = document.createElement('div');
+    cards.className = 'suggestion-cards';
+    suggestions.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'suggestion-btn';
+      btn.textContent = '▶ ' + s;
+      btn.onclick = () => sendText(s);
+      cards.appendChild(btn);
+    });
+    bubble.appendChild(cards);
+  }
+
+  wrap.appendChild(av);
+  wrap.appendChild(bubble);
+  messages.appendChild(wrap);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function formatText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^• (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    .replace(/\n/g, '<br>');
+}
+
+function showTyping() {
+  const messages = document.getElementById('messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'typing-wrap';
+  wrap.id = 'typing';
+
+  const av = document.createElement('div');
+  av.className = 'avatar bot';
+  av.textContent = 'TH';
+
+  const dots = document.createElement('div');
+  dots.className = 'typing-dots';
+  dots.innerHTML = '<span></span><span></span><span></span>';
+
+  wrap.appendChild(av);
+  wrap.appendChild(dots);
+  messages.appendChild(wrap);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+async function sendText(text) {
+  if (!text.trim()) return;
+
+  addMessage('user', text);
+
+  const contextPrefix = `[Functie: ${roleLabels[userRole]} | Hotel: ${hotelLabels[userHotel]}]\n\n`;
+  history.push({ role: 'user', content: contextPrefix + text });
+
+  showTyping();
+
+  const isScenario = text.toLowerCase().includes('speel') || text.toLowerCase().includes('scenario');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+headers: {
+  'Content-Type': 'application/json',
+  'x-api-key': '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',
+  'anthropic-version': '2023-06-01'
+},    });
+
+    const data = await res.json();
+    hideTyping();
+
+    if (data.error) {
+      showError('Er is een fout opgetreden: ' + (data.error.message || 'Probeer het opnieuw.'));
+      history.pop();
+      return;
+    }
+
+    const reply = data.content[0].text;
+    history.push({ role: 'assistant', content: reply });
+
+    let suggestions = null;
+    if (isScenario) {
+      suggestions = [
+        'Ga verder met dit scenario',
+        'Speel een ander scenario',
+        'Wat zou Townhouse verwachten in deze situatie?'
+      ];
+    }
+
+    addMessage('bot', reply, suggestions);
+
+  } catch (err) {
+    hideTyping();
+    showError('Geen verbinding. Controleer je internetverbinding en probeer opnieuw.');
+    history.pop();
+  }
+}
+
+function showError(msg) {
+  const messages = document.getElementById('messages');
+  const err = document.createElement('div');
+  err.className = 'error-msg';
+  err.textContent = msg;
+  messages.appendChild(err);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  sendText(text);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function resetChat() {
+  if (!confirm('Wil je een nieuw gesprek starten? Het huidige gesprek wordt gewist.')) return;
+  history = [];
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('onboarding').style.display = 'flex';
+  document.getElementById('chat').style.display = 'none';
+  document.getElementById('roleSelect').value = '';
+  document.getElementById('hotelSelect').value = '';
+  userRole = '';
+  userHotel = '';
+}
+</script>
+</body>
+</html>
