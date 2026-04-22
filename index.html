@@ -802,7 +802,6 @@ select { font-family: inherit; }
       <select class="form-select" id="roleSelect" required>
         <option value="" disabled selected>Kies jouw functie...</option>
         <option value="frontoffice">Front Office / Receptie</option>
-        <option value="housekeeping">Housekeeping</option>
         <option value="fb">Food &amp; Beverage</option>
         <option value="gm">General Manager</option>
         <option value="sales">Sales / Marketing</option>
@@ -874,7 +873,7 @@ select { font-family: inherit; }
 
 /* ── CONFIG ── */
 const API_URL    = 'https://api.anthropic.com/v1/messages';
-const API_KEY    = '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'; // vervang dit
+const API_KEY    = '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'; // vervang dit
 const API_MODEL  = 'claude-sonnet-4-20250514';
 const MAX_TOKENS = 1024;
 const MAX_HISTORY = 20; // max berichten in context
@@ -1170,11 +1169,11 @@ async function sendText(text) {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: {
-  'Content-Type': 'application/json',
-  'x-api-key': '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',
-  'anthropic-version': '2023-06-01',
-  'anthropic-dangerous-direct-browser-access': 'true'
-},
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
         model: API_MODEL,
         max_tokens: MAX_TOKENS,
