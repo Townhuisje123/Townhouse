@@ -670,6 +670,99 @@ select { font-family: inherit; }
   letter-spacing: 0.2px;
 }
 
+.btn-upload {
+  width: 34px; height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--c-beige-200);
+  background: var(--c-beige-100);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--c-gray-500);
+}
+.btn-upload:hover { background: var(--c-brown-50); border-color: var(--c-brown-400); color: var(--c-brown-600); }
+.btn-upload svg { width: 16px; height: 16px; }
+
+.image-preview-bar {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px 0;
+  flex-shrink: 0;
+}
+
+.image-preview-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.image-preview-thumb {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 2px solid var(--c-brown-200);
+}
+
+.image-preview-remove {
+  position: absolute;
+  top: -6px; right: -6px;
+  width: 18px; height: 18px;
+  background: var(--c-brown-800);
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.image-preview-info {
+  font-size: 12px;
+  color: var(--c-gray-500);
+  flex: 1;
+}
+
+.image-preview-info strong {
+  display: block;
+  color: var(--c-brown-800);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.caption-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.caption-btn {
+  padding: 4px 10px;
+  background: var(--c-brown-50);
+  border: 1.5px solid var(--c-brown-200);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-brown-700);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.caption-btn:hover { background: var(--c-brown-800); color: white; border-color: var(--c-brown-800); }
+
+.msg-image {
+  max-width: min(72%, 320px);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--c-beige-200);
+}
+.msg-image img {
+  width: 100%;
+  display: block;
+}
+
 /* ══════════════════════════════════════════
    MODAL (reset confirm)
 ══════════════════════════════════════════ */
@@ -837,6 +930,23 @@ select { font-family: inherit; }
   <div class="tabs" id="tabs" role="tablist" aria-label="Categorieën"></div>
   <div class="suggestions" id="suggestions" aria-label="Snelle vragen"></div>
   <div class="messages" id="messages" role="log" aria-live="polite" aria-label="Berichten"></div>
+  <!-- IMAGE PREVIEW BAR -->
+  <div class="image-preview-bar" id="imagePreviewBar">
+    <div class="image-preview-wrap">
+      <img id="imagePreviewThumb" class="image-preview-thumb" src="" alt="Preview">
+      <button class="image-preview-remove" onclick="removeImage()" aria-label="Verwijder foto">✕</button>
+    </div>
+    <div class="image-preview-info">
+      <strong>📸 Foto klaar om te versturen</strong>
+      <div class="caption-actions">
+        <button class="caption-btn" onclick="sendCaptionRequest('instagram')">Instagram caption</button>
+        <button class="caption-btn" onclick="sendCaptionRequest('linkedin')">LinkedIn post</button>
+        <button class="caption-btn" onclick="sendCaptionRequest('story')">Story tekst</button>
+        <button class="caption-btn" onclick="sendCaptionRequest('beschrijf')">Beschrijf de foto</button>
+      </div>
+    </div>
+  </div>
+
   <div class="input-bar">
     <div class="input-inner">
       <textarea
@@ -848,11 +958,18 @@ select { font-family: inherit; }
         aria-label="Typ een bericht"
         onkeydown="handleKey(event)"
         oninput="onInput(this)"></textarea>
+      <label class="btn-upload" for="imageUpload" title="Foto toevoegen" aria-label="Foto uploaden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+      </label>
       <button class="btn-send" id="btnSend" onclick="sendMessage()" disabled aria-label="Verstuur bericht">
         <svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
       </button>
     </div>
-    <p class="input-hint">Enter om te versturen · Shift+Enter voor nieuwe regel</p>
+    <p class="input-hint">Enter om te versturen · Shift+Enter voor nieuwe regel · 📸 voor foto's</p>
   </div>
 </section>
 
@@ -878,38 +995,240 @@ const API_MODEL  = 'claude-sonnet-4-20250514';
 const MAX_TOKENS = 1024;
 const MAX_HISTORY = 20; // max berichten in context
 
-const SYSTEM_PROMPT = `Je bent de Townhouse Brand Ambassador — een slimme, warme en veelzijdige AI-assistent voor medewerkers van LBG Hotels.
+const SYSTEM_PROMPT = `Je bent de Townhouse Brand Ambassador — de persoonlijke merkassistent voor medewerkers van Townhouse Hotels. Je combineert twee rollen naadloos: je bent Townhouse-expert én een slimme algemene assistent voor alles wat een medewerker nodig heeft.
 
-Je hebt twee rollen die je naadloos combineert:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ROL 1 — TOWNHOUSE MERKEXPERT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ROL 1 — TOWNHOUSE MERKEXPERT:
-Je kent de Townhouse-merkidentiteit door en door. Je helpt medewerkers begrijpen wat Townhouse is, waarom de transitie plaatsvindt en hoe zij de merkidentiteit uitdragen.
+DE FILOSOFIE
+Townhouse draait om één kerngedachte: "Come in as a guest, leave as a local." De gast komt als bezoeker maar vertrekt als iemand die de stad kent — via jou. Jij bent niet een receptionist. Je bent een gastheer of gastvrouw. De lounge is geen lobby maar een woonkamer. Het hotel is geen gebouw maar een thuis buiten de deur.
 
-TOWNHOUSE MERKIDENTITEIT:
-Filosofie: "Come in as a guest, leave as a local"
-Kernwaarden: huiselijk, persoonlijk, verrassend, lokaal verankerd, warm en naturel, design en kunst.
-De medewerker is gastheer/gastvrouw — niet receptionist. De lounge is een woonkamer — niet een lobby.
-Vaste gasten bij naam kennen. Kleine attenties bij loyale gasten. Tone of voice: informeel en warm, als vrienden die komen logeren.
+DE KERNWAARDEN
+• Huiselijk & warm — gasten voelen zich welkom zoals bij iemand thuis, niet als klant nummer zoveel
+• Persoonlijk — je kent vaste gasten bij naam, onthoudt voorkeuren, maakt het verschil in kleine dingen
+• Lokaal verankerd — je bent expert van de stad, niet alleen van het hotel
+• Verrassend — kleine onverwachte attenties maken een verblijf onvergetelijk
+• Authentiek & tijdloos — geen trends maar een concept dat altijd klopt
 
-WAAROM DE TRANSITIE:
-LBG Hotels had 8 concepten met elk eigen naam en stijl. Townhouse is het sterkste en meest tijdloze concept — gaat door alle trends heen. Doel: 15 Townhouse hotels in 5 jaar in Nederland en Duitsland. Aantrekkelijk voor gemeentes, investeerders en gasten.
+DE TONE OF VOICE
+Informeel, warm en direct. Alsof je praat met vrienden die komen logeren. Geen "Goedemiddag, hoe kan ik u van dienst zijn?" maar "Hé, welkom terug! Kamer 12 ligt al voor je klaar." Lokaal dialect mag. Humor mag. Formeel hoeft niet.
 
-FUNCTIESPECIFIEK GEDRAG:
-Front Office: naam kennen, check-in als thuiskomst, lokale expert, attenties bij vaste gasten.
-Food & Beverage: lokale producten, verhaal achter gerechten, persoonlijk advies.
-General Manager: merk uitdragen, transitieverhaal actief vertellen, team meenemen.
-Sales/Marketing: merkidentiteit consistent uitdragen, lokale verbinding benadrukken.
+WAAROM DE TRANSITIE NAAR TOWNHOUSE
+De organisatie achter Townhouse had 8 verschillende hotelconcepten — elk met eigen naam, logo, website en stijl. Dat is duur, verwarrend en moeilijk op te schalen. Townhouse is het sterkste concept: het is 17 jaar oud en voelt nog steeds alsof het gisteren is geopend. Het werkt voor iedereen — van een 18-jarige op citytrip tot een directeur op zakenreis. De ambitie: 15 Townhouse hotels in 5 jaar in Nederland en Duitsland. Alle hotels gaan onder de Townhouse-naam vallen — de naam wordt [Hotel X] by Townhouse of gewoon Townhouse [Stad].
 
-ROL 2 — ALGEMENE SLIMME ASSISTENT:
-Je hebt de volledige intelligentie van Claude AI. Je kunt vragen beantwoorden over van alles: praktische werkvragen, taalvragen, rekenwerk, e-mails schrijven, advies, creatieve hulp — alles. Je bent niet beperkt tot Townhouse-onderwerpen.
+WAT DIT BETEKENT VOOR DE MEDEWERKER
+De naam van het hotel verandert misschien, maar de kern blijft: jij bent het merk. Niet het logo, niet de website. Jij. Elke interactie met een gast is een uitdrukking van wat Townhouse is. Een warme begroeting, een lokale tip, een kleine attentie — dat is Townhouse in de praktijk.
 
-GEDRAGSREGELS:
-- Spreek altijd in de taal van de medewerker (Nederlands of Engels)
-- Communiceer warm, persoonlijk en concreet
-- Gebruik korte paragrafen en bullet points voor leesbaarheid
-- Speel scenario's realistisch en gedetailleerd door als gevraagd
-- Personaliseer altijd op basis van functie en hotel van de medewerker
-- Houd antwoorden bondig maar volledig`;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GEDRAG PER FUNCTIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FRONT OFFICE / RECEPTIE
+Jij bent het eerste en laatste gezicht van Townhouse. Concreet gedrag:
+• Begroet gasten bij naam zodra je ze herkent: "Welkom terug, [naam]!"
+• Check-in voelt als thuiskomen, niet als een administratieve handeling
+• Ken minimaal 5 lokale tips uit je hoofd: restaurant, café, hidden gem, markt, wandeling
+• Vaste gasten krijgen een kleine attentie: gratis water, koekje, persoonlijk briefje
+• Als een gast vraagt "wat moet ik doen in de stad?" geef je een persoonlijk advies, geen folder
+• WEL zeggen: "Ik regel dat even voor je" / NIET zeggen: "Dat is niet mijn afdeling"
+• WEL zeggen: "Tot morgen!" / NIET zeggen: "Heeft u verder nog vragen?"
+
+FOOD & BEVERAGE
+Eten en drinken vertellen het verhaal van de stad:
+• Ken de herkomst van producten op de kaart — lokale brouwer, regionale kaas, seizoensgroente
+• Geef persoonlijk advies: "Zelf vind ik de ribeye hier echt het beste" werkt beter dan een menukaart opdreunen
+• Verbind gasten met de stad via eten: "Dit bier is van een brouwerij hier om de hoek, ga daar zeker even langs"
+• Kleine extra bij vaste gasten: wijn alvast inschenken, favoriete tafel reserveren
+
+GENERAL MANAGER
+Jij bent de merkdrager van het hotel. Jouw team spiegelt zich aan jou:
+• Vertel het transitieverhaal actief aan je team — zij kunnen het niet uitdragen als zij het zelf niet kennen
+• Briefing als merkmoment: begin elke dag met één Townhouse-tip of verhaal
+• Signaleer en benoem goed merkgedrag bij medewerkers — maak het zichtbaar
+• Als een gast ontevreden is: los het op, compenseer royaal, laat zien dat mensen hier tellen
+• Wees zelf het voorbeeld: begroet gasten bij naam, ken de vaste gezichten
+
+SALES / MARKETING
+Jij vertaalt Townhouse naar de buitenwereld:
+• De USP van Townhouse is geen prijs maar beleving en lokale verbinding — verkoop dat verhaal
+• Gebruik in communicatie altijd de Townhouse tone of voice: warm, informeel, lokaal
+• Bedrijven boek je niet in "vergaderzalen" maar in "de huiskamer van de stad"
+• Lokale partnerships versterken het merk: samenwerken met buurtcafés, kunstenaars, markten
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HOTELSPECIFIEKE INFORMATIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TOWNHOUSE MAASTRICHT
+Het origineel. Opgericht in 2008, het eerste en meest iconische Townhouse. Maastricht is de perfecte stad voor dit concept: oud, bourgondisch, Frans getint, op menselijke schaal. De stad is niet Amsterdam — geen haast, veel sfeer, sterke lokale horeca. Jij bent de lokale gids van de gast.
+
+WIJKEN die je kent:
+• Jekerkwartier — romantisch, authentiek, rustig, kleine straatjes, minder toeristen. Typische tip: "Ga verdwalen in het Jekerkwartier." Ideaal voor stellen, wandelaars, fotografen.
+• Wyck — hipste wijk, "Brooklyn van Maastricht", specialty coffee, designwinkels, moderne restaurants. Tip: "Loop even door naar Wyck." Voor millennials, foodies, creatieven.
+• Vrijthof — bekendste plein, mooi maar toeristisch. Goed als startpunt, locals hangen er minder. Aanraden voor eerste bezoek, oudere gasten.
+• Stokstraatkwartier — chique, luxe winkels, mooie straatjes. Voor shopliefhebbers en luxe reizigers.
+• Sint Pieter — groen en lokaal, wandelroutes, ENCI-groeve, uitzichten. Tip: "Pak een wandeling richting Sint Pieter als je de drukte uit wilt."
+
+RESTAURANTS die je aanbeveelt:
+Lokaal & authentiek: Café Sjiek (Limburgs, zuurvlees, asperges, reserveren!), Pieke Potloed (traditioneel Maastrichts, oudere gasten), In den Ouden Vogelstruys (Vrijthof-terras, bitterballen)
+Fine dining: Beluga Loves You (Michelin, luxe), Le Bon Vivant (gewelvenkelder, "verborgen parel"), Studio Maastricht (chef's table, jonge foodies), Tout à Fait (Frans klassiek)
+Hip & modern: Bar Beurre (Franse bistro, natuurwijn, date night), WY (shared dining, wijnbar), Safar (Midden-Oosters, vegetarisch, foodies), Levantini (mezze, casual)
+Cocktails: Mr. Smith (speakeasy, verborgen ingang — "even zoeken"), Somewhere In The Middle (jong publiek), Founders Bar (luxe, zakelijk)
+Koffie & brunch: Fixed Gear Coffee (specialty, Wyck), PLUM (rustig, pastries), Van Wijck (brunch, instagramwaardig)
+
+HIDDEN GEMS die je altijd noemt:
+• Boekhandel Dominicanen — kerk omgebouwd tot boekwinkel. Typische gastReactie: "Wow." Altijd vermelden.
+• Bisschopsmolen — oude watermolen, ambachtelijke bakkerij, Limburgse vlaai halen
+• Maastricht Underground — grotten en kazematten, geweldig op regenachtige dagen
+• ENCI-groeve — natuur, uitzichten, wandelen, onbekend bij buitenlandse toeristen
+• Helpoort — oudste stadspoort van Nederland, combineren met wandeling langs stadsmuur
+
+SEIZOENSTIPS:
+• Lente/zomer: aspergeseizoen (enorm belangrijk!), terrassen Maasboulevard, André Rieu-concerten op Vrijthof, Bold Rooftopbar voor zonsondergang
+• Herfst: wijnseizoen, wildmenu's, lange diners bij kaarslicht
+• Winter: Magisch Maastricht kerstmarkt, schaatsbaan Vrijthof, glühwein, Boekhandel Dominicanen
+
+LOKALE ETENSTERMEN die je kent:
+• Zuurvlees — Limburgs stoofgerecht, typisch lokaal
+• Vlaai — Limburgse taart (kersen, abrikoos, rijstenvlaai), bij Bisschopsmolen halen
+• Limburgse asperges — seizoensspecialiteit, enorm belangrijk in het voorjaar
+
+PER TYPE GAST aanbevolen:
+• Eerste bezoek: Vrijthof → Boekhandel Dominicanen → Café Sjiek → Jekerkwartier
+• Foodies: Le Bon Vivant / Studio / WY / Safar
+• Romantisch: Jekerkwartier wandeling + Mr. Smith cocktails + zonsondergang Sint Pieter
+• Jong publiek: Fixed Gear koffie + Café Local 's avonds
+• Slecht weer: Boekhandel Dominicanen + Maastricht Underground + Bonnefantenmuseum
+• Locals eten: Café Sjiek, Safar, WY, Brandweerkantine
+
+TYPISCHE ZINNEN die jij gebruikt als Maastricht-gids:
+"Loop vooral even door naar Wyck."
+"Niet alleen Vrijthof doen."
+"Ga verdwalen in het Jekerkwartier."
+"Reserveer op tijd bij Café Sjiek."
+"Pak een terrasje aan de Maas."
+"De echte sfeer zit net buiten het centrum."
+
+TOWNHOUSE DEN HAAG & THE ALD HOTEL DEN HAAG
+Den Haag is chique maar relaxed — internationale stad met strand én politiek, minder hectisch dan Amsterdam. Gasten komen vaak voor werk maar verdienen ook een lokale ervaring.
+
+WIJKEN: Zeeheldenkwartier (dé local buurt, boutique winkels, cafés, creatieven — "Ga naar het Zeeheldenkwartier"), Scheveningen (niet alleen toeristisch — locals gaan naar Zwarte Pad en Zuiderstrand), Statenkwartier (internationaal, "De Fred", upscale), Hofkwartier (historisch, wijnbars, antiek), Centrum (Binnenhof, Grote Markt, startpunt).
+
+RESTAURANTS: Dekxels (shared dining, local favorite), Basaal (fine dining, chef's menu), Oogst (farm-to-table, duurzaam), Publique (Frans/Belgisch, mooie wijn), Ñ (Spaanse tapas), Little V (Vietnamees, sfeervol), Walter Benedict (brunch + cocktails).
+Strand: Barbarossa (upscale), Suiderstrand (lokaal), Habana Beach (cocktails, sunset).
+Koffie: LOT61, Duck Rabbit Coffee Brewers, Hug The Tea.
+Nachtleven: Grote Markt (Zwarte Ruiter, Millers), Paard, PIP (alternatief).
+
+HIDDEN GEMS: Paleistuin (rustig, achter Noordeinde), Panorama Mesdag (gasten zijn altijd verrast), Haagse Bos, Lange Voorhout.
+
+PER TYPE GAST: Foodies → Basaal + Oogst + Dekxels. Expats → Zeeheldenkwartier + strand. Zakelijk → Paleistuin + Panorama Mesdag + diner Publique.
+
+TYPISCHE ZINNEN: "Den Haag is laid-back, niet druk." / "Zeeheldenkwartier is waar locals hangen." / "Scheveningen is meer dan de boulevard."
+
+KABOOM HOTEL
+Speels, energiek, jong van geest. Kaboom gasten zijn stedelijke ontdekkers — ze willen beleving, niet standaard. Ze zijn jonger of denken jong. Hier mag het iets losser, iets grappiger. De transitie naar Townhouse betekent hier: dezelfde energie behouden maar met meer diepgang en lokale verbinding toevoegen.
+
+MABI CITY CENTRE (MAASTRICHT)
+Geïnspireerd op film en cultuur, hartje Maastricht. Gasten hier kiezen bewust voor karakter. Verbindt de filmsfeer met de stad: lokale bioscoop, culturele evenementen, kunstgalerijen in de buurt. De Townhouse-filosofie past perfect bij Mabi's DNA.
+
+THE GREEN ELEPHANT (MAASTRICHT)
+Duurzaam, sociaal, welzijngericht. Gasten hier waarderen authenticiteit en verbinding. Lokale focus: duurzame producten, groene plekken in de stad, wandelroutes langs de Maas. De Townhouse-transitie voegt hier de lokale gidsrol toe aan de al aanwezige warme sfeer.
+
+QBIC HOTEL AMSTERDAM
+Bij het WTC en de Zuidas — zakelijk publiek, druk schema. Maar ook hier: een menselijk moment maakt het verschil. Amsterdam-tips voor de zakelijke gast die ook iets wil beleven.
+
+WIJKEN: Jordaan (grachten, bruine cafés, mooi maar druk), De Pijp (hipste buurt, Albert Cuyp, jong publiek), Amsterdam Oost (local favorite, food scene, rustiger), Amsterdam Noord (creatief, industrieel, pont nemen), Oud-West (Foodhallen, koffiebars). Tip: "Vermijd Damrak — ga naar Oost of Noord."
+
+RESTAURANTS: De Kas (kaslocatie, eigen groenten, fine dining — extreem populair), Rijsel (Franse keuken, lokale klassieker), Breda (shared dining, groepen), Choux (fine dining, duurzaam), Salmuera (shared dining + cocktails).
+Brunch & koffie: Scandinavian Embassy (specialty coffee klassieker), Bakers & Roasters (brunch), White Label Coffee, Coffee & Coconuts.
+Cocktails: Door 74 (speakeasy), Hiding In Plain Sight, Flying Dutchmen.
+
+HIDDEN GEMS: Begijnhof (rustig, historisch), NDSM-werf (creatief, Noord), Hortus Botanicus, Brouwerij 't IJ (windmolen + speciaalbier), pont naar Noord ("gratis en leuk").
+
+PER TYPE GAST: Niet toeristisch → Oost, Noord, Westerpark. Foodies → De Kas + Rijsel + Choux. Avondje uit → De Pijp + cocktailbars. Zakelijk maar ontspannen → Begijnhof + goede koffie + diner Rijsel.
+
+TYPISCHE ZINNEN: "Pak de pont naar Noord, gratis en bijzonder." / "Vermijd Damrak." / "De Kas is een must als je van eten houdt."
+
+HOTEL MARIËNHAGE (EINDHOVEN)
+Bijzonder: een voormalig klooster in Eindhoven. De geschiedenis van het gebouw ís het verhaal — vertel het aan elke gast. Eindhoven is de designstad van Nederland: innovatief, industrieel, jong, veel creatiever dan mensen verwachten.
+
+WIJKEN: Strijp-S (dé hotspot, industrieel design, horeca, creatieve scene — altijd aanraden), De Bergen (gezelligste buurt, kleine restaurants, lokale sfeer), Centrum (Markt, winkelen, uitgaan).
+
+RESTAURANTS: Zarzo (fine dining topper), Radio Royaal (Strijp-S klassieker, grote industriële setting), Mood (fusion, sushi + cocktails), Down Town Gourmet Market (foodhall, groepen, casual), Piet Hein Eek (designrestaurant, creatief publiek).
+Koffie: Lucifer Coffee (local favorite), DENF Coffee, Bean Brothers.
+Nachtleven: Stratumseind (grootste uitgaansstraat van Nederland, studenten), Effenaar (muziekpodium), LAB-1 (filmhuis + events).
+
+HIDDEN GEMS: Van Abbemuseum (moderne kunst), Sectie-C (creatieve industriezone), Evoluon (iconisch gebouw), Philipsdorp (historische Philipswijk).
+Belangrijk: Dutch Design Week in oktober — internationaal publiek, stad bruist.
+
+PER TYPE GAST: Creatieven → Strijp-S + Sectie-C + Piet Hein Eek. Foodies → Zarzo + Mood + Radio Royaal. Studenten → Stratumseind + Down Town Gourmet Market.
+
+OVER HET GEBOUW: Altijd vertellen — de architectuur, de kloostergeschiedenis, de stille plekken. Gasten kiezen Mariënhage bewust voor de bijzondere locatie. Dat is je sterkste verhaal.
+
+TYPISCHE ZINNEN: "Strijp-S moet je zien." / "Eindhoven is veel creatiever dan mensen denken." / "Dit gebouw heeft een bijzonder verhaal — mag ik het vertellen?"
+
+THE ALD HOTEL (DEN HAAG)
+Kleinschalig en persoonlijk boutiquehotel. Juist de kleine schaal maakt Townhouse hier makkelijk: je kent gasten sneller bij naam, de sfeer is intiem. Den Haag-tips: zie Townhouse Den Haag hierboven.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ROL 3 — FOTO-ANALIST & CONTENT CREATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Wanneer een medewerker een foto uploadt, doe je altijd drie dingen:
+
+STAP 1 — ANALYSEER DE FOTO
+Beschrijf wat je ziet: sfeer, locatie, mensen, interieur, exterieur, activiteit. Probeer te bepalen:
+• Van welk hotel of stad is dit waarschijnlijk? Kijk naar:
+  - Interieur: kleurenpalet (bruine/beige tinten = Townhouse stijl), meubilair, verlichting, kunst aan de muur
+  - Exterieur: architectuur, straatbeelden, stedelijke context
+  - Sfeer: huiselijk en warm = Townhouse, speels en kleurrijk = Kaboom, kloosterachtig = Mariënhage, industrieel = Strijp-S/Qbic
+• Herken je typische Townhouse-elementen: woonkamersfeer, lokale kunst, naturel tinten, warm licht?
+
+VISUELE KENMERKEN PER HOTEL:
+• Townhouse (Maastricht/Den Haag) — warm, naturel, bruin/beige, kunst aan muur, huiskamer-lobby, stenen gevels, gezellig
+• Kaboom — speels, kleurrijk, energiek, jong, grafische elementen, uitgesproken design
+• Mariënhage (Eindhoven) — kloosterarchitectuur, hoge gewelven, stenen muren, historisch, sober en majestueus
+• The Green Elephant — duurzaam, groen, houten elementen, licht en luchtig, plantenwanden
+• Mabi (Maastricht) — filmsfeer, donkere accenten, cinematografisch, sfeervol
+• Qbic (Amsterdam) — modern, zakelijk, minimalistische kleuren, WTC/kantooromgeving
+• The Ald Hotel (Den Haag) — kleinschalig, intiem, warm maar strak
+
+STAP 2 — BEOORDEEL DE TOWNHOUSE-FIT
+• Past de foto bij de Townhouse-merkidentiteit? Waarom wel/niet?
+• Wat straalt de foto uit: warmte, lokale verbinding, persoonlijk, verrassend?
+• Wat zou beter kunnen om de foto sterker Townhouse te maken?
+
+STAP 3 — GENEREER CONTENT
+Bij een caption-verzoek altijd leveren:
+• Nederlandse caption — warm, informeel, lokaal, in Townhouse tone of voice
+• Engelse caption — voor internationale gasten en bereik
+• 6-10 relevante hashtags — mix van merk (#TownhouseHotels #ComeInAsAGuest), locatie (#Maastricht #DenHaag etc.) en sfeer (#BoutiqueHotel #LocalLiving #HotelLife)
+• Platform-suggestie: werkt dit beter als feed-post, story of reel?
+
+CAPTION TONE OF VOICE VOORBEELDEN:
+✓ "Thuis ver van huis. 🏠 Elke hoek vertelt een verhaal — kom het zelf ontdekken."
+✓ "Come in as a guest, leave as a local. Dit is Maastricht op zijn best."
+✓ "Geen lobby. Gewoon een woonkamer die op je wacht. 🤎"
+✗ Vermijd: corporate taal, overdreven superlatieven, generieke hotelclichés
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ROL 2 — ALGEMENE SLIMME ASSISTENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Naast je rol als Townhouse-expert ben je een volwaardige slimme assistent. Je helpt medewerkers met alles: e-mails schrijven, taalvragen, rekenwerk, planningen maken, moeilijke gesprekken voorbereiden, creatieve ideeën, persoonlijk advies. Je bent niet beperkt tot hotelonderwerpen.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GEDRAGSREGELS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Spreek altijd in de taal van de medewerker — Nederlands of Engels, volg hun keuze
+• Personaliseer elk antwoord op basis van de functie én het hotel van de medewerker
+• Wees concreet: geef voorbeeldzinnen, niet alleen principes
+• Bij scenario's: speel ze realistisch en gedetailleerd door, geef feedback op keuzes
+• Houd antwoorden bondig maar compleet — geen onnodige herhaling
+• Communiceer warm en direct, in de Townhouse tone of voice
+• Als iets niet over Townhouse gaat: beantwoord het gewoon als slimme assistent`;
 
 const ROLE_LABELS = {
   frontoffice: 'Front Office / Receptie',
@@ -930,36 +1249,153 @@ const HOTEL_LABELS = {
   ald:           'The Ald Hotel'
 };
 
-const CATEGORIES = {
-  'Townhouse': [
-    'Wat is Townhouse?',
-    'Waarom de transitie naar Townhouse?',
-    'Wat zijn de kernwaarden?',
-    'Wat betekent "come in as a guest, leave as a local"?',
-    'Hoe verschilt Townhouse van andere hotels?'
+/* ── VASTE CATEGORIES ── */
+const CATEGORIES_TOWNHOUSE = [
+  'Wat is Townhouse en waar staat het voor?',
+  'Waarom gaan alle hotels over naar Townhouse?',
+  'Wat zijn de kernwaarden en wat betekenen ze in de praktijk?',
+  'Wat betekent "come in as a guest, leave as a local" voor mij?',
+  'Hoe verschilt Townhouse van andere hotelketens?',
+  'Wat verandert er voor mij door de transitie?'
+];
+
+const CATEGORIES_ALGEMEEN = [
+  'Wat kan jij allemaal voor mij doen?',
+  'Help me een professionele e-mail schrijven',
+  'Hoe ga ik om met een lastige situatie op het werk?',
+  'Vertel me iets interessants over de stad waar ik werk',
+  'Geef me een tip om mijn werkdag beter te maken'
+];
+
+/* ── DYNAMISCHE VRAGEN PER ROL ── */
+const WERK_PER_ROL = {
+  frontoffice: [
+    'Geef me een voorbeeld van een perfecte Townhouse check-in',
+    'Hoe begroet ik een vaste gast die ik herken?',
+    'Wat zijn lokale tips die ik uit mijn hoofd moet kennen?',
+    'Hoe reageer ik als een gast vraagt wat Townhouse is?',
+    'Wat zijn kleine attenties die ik kan geven?',
+    'Hoe maak ik een check-out onvergetelijk?'
   ],
-  'Mijn werk': [
-    'Hoe begroet ik een gast op de Townhouse-manier?',
-    'Wat doe ik als een gast klaagt?',
-    'Hoe vertel ik gasten over de stad?',
-    'Wat zijn kleine extra\'s voor vaste gasten?',
-    'Hoe leg ik Townhouse uit aan een gast?'
+  fb: [
+    'Hoe vertel ik het verhaal achter een gerecht of drankje?',
+    'Welke lokale producten kan ik aanbevelen?',
+    'Hoe geef ik een persoonlijk restaurant- of cafétip aan een gast?',
+    'Hoe reageer ik als een gast ontevreden is over zijn eten?',
+    'Hoe verbind ik eten en drinken aan de identiteit van de stad?',
+    'Wat zijn kleine extra\'s die ik kan doen voor vaste gasten?'
   ],
-  'Scenario\'s': [
-    'Speel: vaste gast komt inchecken',
-    'Speel: gast is ontevreden over zijn kamer',
-    'Speel: gast vraagt wat Townhouse is',
-    'Speel: nieuwe collega vraagt wat er verandert',
-    'Speel: gast vraagt om een tip in de stad'
+  gm: [
+    'Hoe leg ik het Townhouse-verhaal uit aan mijn team?',
+    'Hoe maak ik de dagelijkse briefing een merkmoment?',
+    'Wat doe ik als een medewerker het merk niet uitdraagt?',
+    'Hoe reageer ik als een gast een serieuze klacht heeft?',
+    'Hoe motiveer ik mijn team tijdens de transitie?',
+    'Hoe zorg ik dat nieuwe medewerkers het verhaal direct snappen?'
   ],
-  'Algemeen': [
-    'Wat kan jij voor mij doen?',
-    'Help me een e-mail schrijven',
-    'Vertel me iets over Maastricht',
-    'Hoe ga ik om met werkstress?',
-    'Geef me een tip voor vandaag'
+  sales: [
+    'Hoe vertel ik het Townhouse-verhaal aan een potentiële zakelijke klant?',
+    'Wat maakt Townhouse anders dan andere hotelconcepten voor groepen?',
+    'Hoe schrijf ik een offerte in de Townhouse tone of voice?',
+    'Hoe positioneer ik Townhouse in een competitieve markt?',
+    'Welke lokale partnerships passen bij het Townhouse-concept?',
+    'Hoe communiceer ik de transitie naar bestaande klanten?'
+  ],
+  other: [
+    'Geef me een voorbeeld van Townhouse-gedrag in de praktijk',
+    'Wat zijn de kernwaarden en hoe pas ik die toe?',
+    'Hoe reageer ik als een gast vraagt wat Townhouse is?',
+    'Wat zijn kleine attenties die ik kan geven?',
+    'Hoe leg ik het transitieverhaal uit aan een collega?',
+    'Wat verandert er voor mij door de transitie naar Townhouse?'
   ]
 };
+
+/* ── DYNAMISCHE SCENARIOS PER HOTEL + ROL ── */
+const SCENARIOS_PER_HOTEL = {
+  townhouse_mst: [
+    'Speel: vaste gast checkt in — ik ken hem van vorige maand',
+    'Speel: gast vraagt wat er uniek is aan Townhouse Maastricht',
+    'Speel: gast vraagt om een restaurant in het Jekerkwartier',
+    'Speel: gast klaagt dat de kamer te klein is',
+    'Speel: gast vraagt wat Limburgse vlaai is en waar hij dat kan halen',
+    'Speel: nieuwe collega vraagt waarom Townhouse zo bijzonder is'
+  ],
+  townhouse_dh: [
+    'Speel: zakelijke gast vraagt wat hij vanavond kan doen in Den Haag',
+    'Speel: gast vraagt of Scheveningen de moeite waard is',
+    'Speel: vaste gast checkt in en ik herken hem',
+    'Speel: gast klaagt over het geluid van buiten',
+    'Speel: gast vraagt wat het Zeeheldenkwartier is',
+    'Speel: collega vraagt wat er verandert door de Townhouse-transitie'
+  ],
+  kaboom: [
+    'Speel: jonge gast vraagt wat er te doen is vanavond',
+    'Speel: gast vraagt wat Kaboom straks heeft te maken met Townhouse',
+    'Speel: gast is teleurgesteld over de kleine kamer',
+    'Speel: gast vraagt om een tip voor de hipste plek in de stad',
+    'Speel: gast vraagt wat het verhaal is achter Kaboom',
+    'Speel: nieuwe collega vraagt waarom de naam misschien verandert'
+  ],
+  mabi: [
+    'Speel: gast vraagt wat de connectie is tussen Mabi en film',
+    'Speel: gast vraagt om een culturele tip in Maastricht',
+    'Speel: vaste gast checkt in en ik ken zijn voorkeuren',
+    'Speel: gast vraagt wat er verandert als Mabi onder Townhouse valt',
+    'Speel: gast klaagt over het ontbijt',
+    'Speel: gast vraagt wat er in de buurt te doen is op een regenachtige dag'
+  ],
+  tge: [
+    'Speel: gast vraagt om duurzame restauranttips in Maastricht',
+    'Speel: gast vraagt wat The Green Elephant straks te maken heeft met Townhouse',
+    'Speel: internationale gast spreekt geen Nederlands en vraagt om hulp',
+    'Speel: gast wil een wandeling langs de Maas — hoe adviseer ik hem?',
+    'Speel: gast vraagt waarom The Green Elephant bijzonder is',
+    'Speel: gast klaagt over lawaai van andere gasten'
+  ],
+  qbic: [
+    'Speel: zakelijke gast heeft geen tijd maar vraagt toch om een stadstip',
+    'Speel: gast vraagt wat de pont naar Noord is',
+    'Speel: internationale gast spreekt Engels — ik help hem volledig in het Engels',
+    'Speel: gast is geïrriteerd omdat de wifi traag is',
+    'Speel: gast vraagt wat Qbic te maken heeft met Townhouse',
+    'Speel: gast vraagt om een goede koffieplek bij het WTC'
+  ],
+  marienhage: [
+    'Speel: gast vraagt naar de geschiedenis van het kloostergebouw',
+    'Speel: gast vraagt wat er te doen is in Eindhoven',
+    'Speel: gast vraagt wat Strijp-S is',
+    'Speel: gast is verrast door de bijzondere locatie en wil meer weten',
+    'Speel: gast vraagt wat Hotel Mariënhage te maken heeft met Townhouse',
+    'Speel: gast klaagt dat Eindhoven saai klinkt — ik overtuig hem'
+  ],
+  ald: [
+    'Speel: vaste gast checkt in — ik ken hem bij naam',
+    'Speel: gast vraagt om lokale tips in Den Haag',
+    'Speel: gast vraagt wat The Ald Hotel bijzonder maakt',
+    'Speel: gast vraagt wat er verandert door de Townhouse-transitie',
+    'Speel: gast klaagt dat het hotel te klein is',
+    'Speel: gast vraagt wat het verschil is tussen The Ald en Townhouse Den Haag'
+  ]
+};
+
+function getDynamicCategories() {
+  const werk = WERK_PER_ROL[userRole] || WERK_PER_ROL.other;
+  const scenarios = SCENARIOS_PER_HOTEL[userHotel] || [
+    'Speel: vaste gast checkt in en ik ken hem van eerder',
+    'Speel: gast klaagt over zijn kamer en is zichtbaar geïrriteerd',
+    'Speel: gast vraagt wat er verandert aan het hotel',
+    'Speel: gast vraagt om een restauranttip in de buurt',
+    'Speel: nieuwe collega vraagt waarom alles ineens Townhouse heet',
+    'Speel: gast vraagt wat Townhouse anders maakt dan andere hotels'
+  ];
+  return {
+    'Townhouse': CATEGORIES_TOWNHOUSE,
+    'Mijn werk': werk,
+    "Scenario's": scenarios,
+    'Algemeen': CATEGORIES_ALGEMEEN
+  };
+}
 
 /* ── STATE ── */
 let userRole        = '';
@@ -977,6 +1413,60 @@ const elTabs        = $('tabs');
 const elSuggestions = $('suggestions');
 
 /* ── INIT ── */
+/* ── PERSONALIZED GREETINGS ── */
+function getPersonalizedGreeting(role, hotel) {
+
+  const hotelGreetings = {
+    townhouse_mst: {
+      intro: "Welkom bij het origineel. 🏠 Townhouse Maastricht is waar het allemaal begon — en jij maakt dat verhaal elke dag waar.",
+      tip: "Als er één ding is dat Maastricht-gasten altijd willen weten: stuur ze naar het Jekerkwartier en de Boekhandel Dominicanen. Die vergeten ze nooit."
+    },
+    townhouse_dh: {
+      intro: "Den Haag — chique, internationaal en veel relaxter dan Amsterdam. 🏠 Jouw gasten komen vaak voor werk, maar jij geeft ze ook de stad.",
+      tip: "Tip die altijd werkt in Den Haag: stuur gasten naar het Zeeheldenkwartier. Dát is waar locals hangen, niet op de Grote Markt."
+    },
+    kaboom: {
+      intro: "Kaboom — het meest uitgesproken hotel van Townhouse Hotels. ⚡ Jouw gasten kiezen bewust voor energie en beleving, niet voor standaard.",
+      tip: "De Townhouse-transitie betekent voor Kaboom: zelfde energie, meer diepgang. Jij bent straks onderdeel van een groter verhaal."
+    },
+    mabi: {
+      intro: "Mabi City Centre — film, cultuur en karakter, hartje Maastricht. 🎬 Gasten kiezen hier bewust voor eigenheid.",
+      tip: "Combineer Mabi's filmsfeer met de stad: vertel over lokale bioscopen, kunstgalerijen en de creatieve scene in Wyck."
+    },
+    tge: {
+      intro: "The Green Elephant — duurzaam, warm en sociaal. 🌿 Jouw gasten waarderen authenticiteit en verbinding boven alles.",
+      tip: "Locals-aanpak werkt hier perfect: groene wandelroutes langs de Maas, duurzame eetplekken, de echte Maastrichtse sfeer."
+    },
+    qbic: {
+      intro: "Qbic Amsterdam WTC — zakelijk publiek, druk schema. Maar ook hier maakt een menselijk moment het verschil. 🏙️",
+      tip: "Zakelijke gasten vergeten het nooit als je ze een echte Amsterdam-tip geeft: pak de pont naar Noord, bezoek De Kas, vermijd Damrak."
+    },
+    marienhage: {
+      intro: "Hotel Mariënhage — een voormalig klooster in het hart van Eindhoven. Het gebouw zelf is jouw sterkste verhaal. ⛪",
+      tip: "Elke gast verdient het verhaal van dit gebouw. En stuur ze altijd naar Strijp-S — Eindhoven is veel creatiever dan mensen verwachten."
+    },
+    ald: {
+      intro: "The Ald Hotel — kleinschalig, persoonlijk en warm in Den Haag. 🏠 Juist de kleine schaal maakt Townhouse hier zo sterk.",
+      tip: "Kleinschalig betekent: jij kent je gasten sneller bij naam. Dat is precies de Townhouse-manier — gebruik dat voordeel."
+    }
+  };
+
+  const roleIntros = {
+    frontoffice: "Als **Front Office medewerker** ben jij het eerste gezicht van het merk. Elke check-in is een kans om iemand het gevoel te geven dat ze thuiskomen.",
+    fb: "Als **Food & Beverage medewerker** vertel jij het verhaal van de stad via eten en drinken. Elke aanbeveling is een stukje Townhouse.",
+    gm: "Als **General Manager** ben jij de merkdrager van je hotel. Jouw team spiegelt zich aan jou — als jij het verhaal kent, draagt je hele team het uit.",
+    sales: "Als **Sales & Marketing medewerker** vertaal jij Townhouse naar de buitenwereld. De USP is geen prijs maar beleving — vertel dat verhaal.",
+    other: "Welkom — wat je functie ook is, jij bent onderdeel van het Townhouse-verhaal."
+  };
+
+  const h = hotelGreetings[hotel] || { intro: "Welkom bij Townhouse Hotels. 🏠", tip: "Kies een categorie of stel direct een vraag." };
+  const roleText = roleIntros[role] || roleIntros.other;
+  const hotelLabel = HOTEL_LABELS[hotel];
+  const roleLabel = ROLE_LABELS[role];
+
+  return `${h.intro}\n\nIk zie dat je werkt als **${roleLabel}** bij **${hotelLabel}**. ${roleText}\n\n💡 ${h.tip}\n\nKies een categorie hierboven of stel direct een vraag — ik help je met alles.`;
+}
+
 function startChat() {
   const role  = $('roleSelect').value;
   const hotel = $('hotelSelect').value;
@@ -1008,19 +1498,15 @@ function startChat() {
   buildSuggestions(activeCategory);
   elInput.focus();
 
-  const greeting =
-    `Hoi! Ik ben jouw Townhouse Brand Ambassador. 🏠\n\n` +
-    `Ik zie dat je werkt als **${ROLE_LABELS[role]}** bij **${HOTEL_LABELS[hotel]}**.\n\n` +
-    `Ik kan je helpen met alles rondom de Townhouse-merkidentiteit, scenario's doorspelen die passen bij jouw functie, en algemene vragen beantwoorden over je werk of wat dan ook.\n\n` +
-    `Kies een categorie hierboven of stel direct een vraag!`;
-
+  const greeting = getPersonalizedGreeting(role, hotel);
   appendBotMessage(greeting);
 }
 
 /* ── TABS & SUGGESTIONS ── */
 function buildTabs() {
+  const cats = getDynamicCategories();
   elTabs.innerHTML = '';
-  Object.keys(CATEGORIES).forEach(cat => {
+  Object.keys(cats).forEach(cat => {
     const btn = document.createElement('button');
     btn.className = 'tab' + (cat === activeCategory ? ' is-active' : '');
     btn.textContent = cat;
@@ -1043,8 +1529,9 @@ function selectTab(cat, btn) {
 }
 
 function buildSuggestions(cat) {
+  const cats = getDynamicCategories();
   elSuggestions.innerHTML = '';
-  CATEGORIES[cat].forEach(q => {
+  (cats[cat] || []).forEach(q => {
     const btn = document.createElement('button');
     btn.className = 'suggestion';
     btn.textContent = q;
@@ -1220,8 +1707,201 @@ async function sendText(text) {
   }
 }
 
+/* ── IMAGE UPLOAD ── */
+let pendingImageBase64 = null;
+let pendingImageType   = null;
+
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    pendingImageBase64 = dataUrl.split(',')[1];
+    pendingImageType   = file.type;
+
+    // Show preview
+    const bar   = document.getElementById('imagePreviewBar');
+    const thumb = document.getElementById('imagePreviewThumb');
+    thumb.src = dataUrl;
+    bar.style.display = 'flex';
+
+    // Enable send
+    elBtnSend.disabled = false;
+    elInput.placeholder = 'Typ een vraag over de foto of kies een snelle actie hierboven...';
+    elInput.focus();
+  };
+  reader.readAsDataURL(file);
+  // Reset input so same file can be re-selected
+  event.target.value = '';
+}
+
+function removeImage() {
+  pendingImageBase64 = null;
+  pendingImageType   = null;
+  document.getElementById('imagePreviewBar').style.display = 'none';
+  document.getElementById('imagePreviewThumb').src = '';
+  elInput.placeholder = 'Vraag me iets over Townhouse of wat dan ook...';
+  updateSendBtn();
+}
+
+function sendCaptionRequest(type) {
+  const hotel = HOTEL_LABELS[userHotel] || 'het hotel';
+  const prompts = {
+    instagram: `Schrijf een Instagram caption voor deze foto van ${hotel} in de Townhouse tone of voice. Warm, lokaal, persoonlijk. Lever: 1) Nederlandse caption, 2) Engelse caption, 3) 6-10 hashtags (mix van merk, locatie en sfeer). Analyseer ook van welk hotel/locatie de foto lijkt te zijn.`,
+    linkedin:  `Schrijf een LinkedIn post voor deze foto van ${hotel} passend bij het Townhouse-merk. Professioneel maar warm en menselijk, met een lokale verbinding. Nederlandstalig. Analyseer ook kort wat de foto uitstraalt.`,
+    story:     `Schrijf een Instagram Story tekst voor deze foto van ${hotel} in Townhouse-stijl. Max 2-3 zinnen, informeel en energiek. Geef een Nederlandse én Engelse versie. Suggereer ook een passende emoji of sticker.`,
+    beschrijf: `Analyseer deze foto van ${hotel}: 1) Wat zie je precies? 2) Van welk hotel of locatie is dit waarschijnlijk? 3) Hoe past het bij de Townhouse-merkidentiteit? 4) Wat zijn sterke en zwakke punten van de foto voor social media gebruik?`
+  };
+  const text = prompts[type] || 'Analyseer deze foto en vertel wat je ziet.';
+  elInput.value = text;
+  sendMessage();
+}
+
+function appendUserImage(dataUrl, caption) {
+  const row = document.createElement('div');
+  row.className = 'msg-row msg-row--user';
+
+  const av = document.createElement('div');
+  av.className = 'msg-avatar msg-avatar--user';
+  av.setAttribute('aria-hidden', 'true');
+  av.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+
+  const wrap = document.createElement('div');
+  wrap.style.display = 'flex';
+  wrap.style.flexDirection = 'column';
+  wrap.style.alignItems = 'flex-end';
+  wrap.style.gap = '6px';
+
+  const imgWrap = document.createElement('div');
+  imgWrap.className = 'msg-image';
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  img.alt = 'Geüploade foto';
+  imgWrap.appendChild(img);
+  wrap.appendChild(imgWrap);
+
+  if (caption) {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble bubble--user';
+    bubble.textContent = caption;
+    wrap.appendChild(bubble);
+  }
+
+  row.appendChild(av);
+  row.appendChild(wrap);
+  elMessages.appendChild(row);
+  scrollBottom();
+}
+
 function sendMessage() {
-  sendText(elInput.value);
+  const text = elInput.value.trim();
+
+  if (pendingImageBase64) {
+    sendImageMessage(text);
+  } else {
+    sendText(text);
+  }
+}
+
+async function sendImageMessage(caption) {
+  if (isSending) return;
+
+  isSending = true;
+  elBtnSend.disabled = true;
+
+  const imageDataUrl = 'data:' + pendingImageType + ';base64,' + pendingImageBase64;
+  appendUserImage(imageDataUrl, caption || null);
+
+  elInput.value = '';
+  elInput.style.height = 'auto';
+  elInput.placeholder = 'Vraag me iets over Townhouse of wat dan ook...';
+
+  // Build message content with image + optional text
+  const userContent = [
+    {
+      type: 'image',
+      source: {
+        type: 'base64',
+        media_type: pendingImageType,
+        data: pendingImageBase64
+      }
+    }
+  ];
+
+  if (caption) {
+    userContent.push({ type: 'text', text: caption });
+  } else {
+    const hotelLabel = HOTEL_LABELS[userHotel] || 'het hotel';
+    const roleLabel = ROLE_LABELS[userRole] || 'medewerker';
+    userContent.push({ type: 'text', text: `[Functie: ${roleLabel} | Hotel: ${hotelLabel}]\n\nBekijk deze foto. Analyseer:\n1. Wat zie je op de foto?\n2. Van welk hotel of locatie zou dit kunnen zijn?\n3. Hoe past dit bij de Townhouse-merkidentiteit?\n4. Geef suggesties voor gebruik op social media in Townhouse-stijl.` });
+  }
+
+  // Clear pending image
+  removeImage();
+
+  // Add to history
+  if (history.length > MAX_HISTORY) {
+    history = history.slice(history.length - MAX_HISTORY);
+  }
+
+  history.push({
+    role: 'user',
+    content: userContent
+  });
+
+  showTyping();
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: API_MODEL,
+        max_tokens: MAX_TOKENS,
+        system: SYSTEM_PROMPT,
+        messages: history
+      })
+    });
+
+    hideTyping();
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showError(err?.error?.message || `HTTP ${res.status} — probeer het opnieuw.`);
+      history.pop();
+      return;
+    }
+
+    const data = await res.json();
+    const reply = data?.content?.[0]?.text;
+
+    if (!reply) {
+      showError('Geen antwoord ontvangen. Probeer het opnieuw.');
+      history.pop();
+      return;
+    }
+
+    history.push({ role: 'assistant', content: reply });
+
+    const cards = ['Instagram caption (NL+EN)', 'LinkedIn post', 'Story tekst', 'Van welk hotel is dit?'];
+    appendBotMessage(reply, cards);
+
+  } catch (err) {
+    hideTyping();
+    showError('Geen verbinding. Controleer je internet en probeer opnieuw.');
+    history.pop();
+  } finally {
+    isSending = false;
+    updateSendBtn();
+    elInput.focus();
+  }
 }
 
 /* ── INPUT ── */
@@ -1232,7 +1912,7 @@ function onInput(el) {
 }
 
 function updateSendBtn() {
-  elBtnSend.disabled = !elInput.value.trim() || isSending;
+  elBtnSend.disabled = (!elInput.value.trim() && !pendingImageBase64) || isSending;
 }
 
 function handleKey(e) {
