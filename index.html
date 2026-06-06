@@ -1452,23 +1452,6 @@ textarea#userInput::placeholder { color:var(--c-text-4); }
   .tr-workspace { padding:16px 16px 32px; }
 }
 
-
-/* ── API KEY SETTINGS ── */
-.key-modal { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:600; opacity:0; pointer-events:none; transition:opacity 0.2s; }
-.key-modal.open { opacity:1; pointer-events:all; }
-.key-card { background:var(--c-surface); border-radius:var(--r-2xl); padding:28px 24px 22px; max-width:360px; width:90%; box-shadow:var(--shadow-lg); }
-.key-card h3 { font-family:var(--serif); font-size:18px; color:var(--c-brown-800); margin-bottom:6px; }
-.key-card p { font-size:12.5px; color:var(--c-text-3); line-height:1.5; margin-bottom:16px; }
-.key-input { width:100%; padding:10px 13px; border:1.5px solid var(--c-border-2); border-radius:var(--r-md); font-size:12px; font-family:var(--font); color:var(--c-text); outline:none; margin-bottom:14px; background:var(--c-bg); }
-.key-input:focus { border-color:var(--c-brown-500); }
-.key-save { width:100%; padding:11px; background:var(--c-brown-800); color:#fff; border-radius:var(--r-md); font-size:13.5px; font-weight:600; font-family:var(--font); cursor:pointer; border:none; transition:background var(--t); }
-.key-save:hover { background:var(--c-brown-700); }
-.key-cancel { display:block; text-align:center; font-size:12px; color:var(--c-text-4); cursor:pointer; margin-top:10px; transition:color var(--t); }
-.key-cancel:hover { color:var(--c-brown-500); }
-.key-status { font-size:11px; margin-bottom:8px; padding:6px 10px; border-radius:var(--r-sm); }
-.key-status.ok { background:var(--c-success-bg); color:var(--c-success); }
-.key-status.err { background:var(--c-error-bg); color:var(--c-error); }
-
 </style>
 </head>
 <body>
@@ -1493,7 +1476,7 @@ textarea#userInput::placeholder { color:var(--c-text-4); }
     </div>
     <div class="topbar__right">
       <div class="topbar__status"><div class="status-dot"></div><span style="font-size:12px;color:rgba(255,255,255,0.5)">Online</span></div>
-      <button class="topbar__btn" id="btnKey" style="display:flex">
+      <button class="topbar__btn" id="btnKey" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3"/></svg>
       </button>
       <button class="topbar__btn" id="btnReset" onclick="openModal()" title="Nieuw gesprek" style="display:none">
@@ -1551,7 +1534,7 @@ textarea#userInput::placeholder { color:var(--c-text-4); }
       </div>
       <div class="sidebar__divider"></div>
       <div class="sidebar__bottom">
-        <button class="nav-item" onclick="openKeySettings()">
+        <button class="nav-item" onclick="return false">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
           Instellingen
         </button>
@@ -2230,7 +2213,7 @@ textarea#userInput::placeholder { color:var(--c-text-4); }
 
 /* ══ CONFIG ══ */
 const API_URL   = 'https://api.anthropic.com/v1/messages';
-let   API_KEY   = localStorage.getItem('th_api_key') || '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';
+let   API_KEY   = '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';
 const API_MODEL = 'claude-sonnet-4-5';
 const MAX_TOKENS = 600;
 const MAX_HISTORY = 20;
@@ -4901,7 +4884,7 @@ async function sendText(text) {
   try {
     const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:API_MODEL,max_tokens:MAX_TOKENS,system:SYSTEM_PROMPT,messages:history})});
     hideTyping();
-    if(!r.ok){const e=await r.json().catch(()=>({}));const s=r.status;let m=s===401?'Verbindingsfout. Controleer of de API-sleutel correct is in Instellingen.':s===429?'Even geduld — te veel vragen tegelijk. Probeer opnieuw.':'Er is iets misgegaan. Probeer het opnieuw.';showError(m);history.pop();return;}
+    if(!r.ok){const e=await r.json().catch(()=>({}));const s=r.status;let m=s===401?'Er is een verbindingsprobleem. Probeer een nieuwe sleutel.':s===429?'Even geduld — te veel vragen tegelijk. Probeer opnieuw.':'Er is iets misgegaan. Probeer het opnieuw.';showError(m);history.pop();return;}
     const data=await r.json(); const reply=data?.content?.[0]?.text;
     if(!reply){showError('Geen antwoord ontvangen.');history.pop();return;}
     history.push({role:'assistant',content:reply});
@@ -6570,77 +6553,6 @@ function buildProcedures() { showProc('checkin'); }
 /* ══ INIT ══ */
 initApp();
 updateGreeting();
-
-/* ── API KEY SETTINGS ── */
-function openKeySettings() {
-  const modal = document.getElementById('keyModal');
-  const input = document.getElementById('keyInput');
-  const status = document.getElementById('keyStatus');
-  if (input) input.value = localStorage.getItem('th_api_key') || '';
-  if (status) status.innerHTML = '';
-  if (modal) modal.classList.add('open');
-}
-function closeKeyModal() {
-  const modal = document.getElementById('keyModal');
-  if (modal) modal.classList.remove('open');
-}
-function keyInputChange() {
-  const btn = document.getElementById('keySaveBtn');
-  const val = document.getElementById('keyInput')?.value?.trim();
-  if (btn) btn.disabled = !val || !val.startsWith('sk-ant');
-}
-async function saveKey() {
-  const val = document.getElementById('keyInput')?.value?.trim();
-  if (!val) return;
-  const status = document.getElementById('keyStatus');
-  const btn = document.getElementById('keySaveBtn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Testen...'; }
-  if (status) status.innerHTML = '<div class="key-status" style="background:var(--c-warn-bg);color:var(--c-warn)">Verbinding testen...</div>';
-  try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':val,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'hi'}]})
-    });
-    if (r.ok || r.status === 400) {
-      localStorage.setItem('th_api_key', val);
-      API_KEY = val;
-      if (status) status.innerHTML = '<div class="key-status ok">✓ Sleutel werkt! Opgeslagen.</div>';
-      if (btn) { btn.textContent = 'Opgeslagen ✓'; }
-      setTimeout(() => closeKeyModal(), 1500);
-      showToast('API-sleutel opgeslagen ✓');
-    } else {
-      const err = await r.json().catch(()=>({}));
-      if (status) status.innerHTML = '<div class="key-status err">✗ Sleutel ongeldig (status ' + r.status + ')</div>';
-      if (btn) { btn.disabled = false; btn.textContent = 'Opslaan & testen'; }
-    }
-  } catch(e) {
-    if (status) status.innerHTML = '<div class="key-status err">✗ Verbindingsfout: ' + e.message + '</div>';
-    if (btn) { btn.disabled = false; btn.textContent = 'Opslaan & testen'; }
-  }
-}
-document.getElementById('keyModal')?.addEventListener('click', function(e) {
-  if (e.target === this) closeKeyModal();
-});
-// Auto-load key from localStorage on startup
-(function() {
-  const stored = localStorage.getItem('th_api_key');
-  if (stored) API_KEY = stored;
-})();
-
 </script>
-
-<!-- API KEY MODAL -->
-<div class="key-modal" id="keyModal">
-  <div class="key-card">
-    <h3>🔑 API-sleutel instellen</h3>
-    <p>Voer je Anthropic API-sleutel in. Je vindt die op <strong>console.anthropic.com</strong> onder API Keys.</p>
-    <div id="keyStatus"></div>
-    <input class="key-input" type="password" id="keyInput" placeholder="sk-ant-api03-..." oninput="keyInputChange()">
-    <button class="key-save" id="keySaveBtn" onclick="saveKey()">Opslaan & testen</button>
-    <span class="key-cancel" onclick="closeKeyModal()">Annuleren</span>
-  </div>
-</div>
-
 </body>
 </html>
